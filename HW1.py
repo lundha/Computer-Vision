@@ -10,13 +10,13 @@ import numpy as np
 import cv2
 
 
+image_src = cv2.imread('b_right.jpg')
+image_dst = cv2.imread('b_left.jpg')
 def get_image_coordinates(first_image, second_image):
 
-    im_left = cv2.imread(first_image)
-    im_right = cv2.imread(second_image)
 
     plt.figure()
-    plt.imshow(im_left)
+    plt.imshow(first_image)
     coordinates_left = plt.ginput(4, show_clicks=True)
     coordinates_left = (np.around(coordinates_left,2))
 
@@ -25,35 +25,32 @@ def get_image_coordinates(first_image, second_image):
     print("\n")
 
     plt.figure()
-    plt.imshow(im_right)
+    plt.imshow(second_image)
     coordinates_right = plt.ginput(4, show_clicks=True)
     coordinates_right = (np.around(coordinates_right,2))
+
 
     print("Coordinates right image:")
     print(coordinates_right)
     print("\n")
 
-    return np.array(coordinates_left), np.array(coordinates_right)
+    return np.array(coordinates_left, np.float32), np.array(coordinates_right, np.float32)
 
-
-
-def get_homography_matrix(coordinates_left, coordinates_right):
+def get_homography_matrix(coordinate_src, coordinate_dst):
 
     row_a, col_a = 8, 8
     row_b, col_b = 8, 1
 
-    A = [[0 for x in range(col_a)] for y in range(row_a)]
-    B = [[0 for x in range(col_b)] for y in range(row_b)]
 
     A_conc = [[0 for x in range(col_a)] for y in range(row_a)]
     B_conc = [[0 for x in range(col_b)] for y in range(row_b)]
 
     for i in range(0, 4):
-        x = int(coordinates_left[i][0])
-        y = int(coordinates_left[i][1])
+        x = int(coordinate_src[i][0])
+        y = int(coordinate_src[i][1])
 
-        x2 = int(coordinates_right[i][0])
-        y2 = int(coordinates_right[i][1])
+        x2 = int(coordinate_dst[i][0])
+        y2 = int(coordinate_dst[i][1])
 
 
         A = np.matrix([[x, y, 1, 0, 0, 0, -x*x2, -y*x2], [0, 0, 0, x, y, 1, -x*y2, -y*y2]])
@@ -66,44 +63,45 @@ def get_homography_matrix(coordinates_left, coordinates_right):
             A_conc = np.concatenate((A_conc,A))
             B_conc = np.concatenate((B_conc,B))
 
-    #print(A_conc)
-    #print(B_conc)
 
     h, residuals, rank, s = np.linalg.lstsq(A_conc,B_conc, rcond=None)
 
     return h
 
-def apply_homography_matrix(image, homography_matrix):
+def apply_homography_matrix(image, homography_matrix, filename):
 
     size = image.shape
-    im_new = cv2.warpPerspective(image, homography_matrix, (size[0], size[1]))
-    plt.figure()
-    plt.imshow(im_new)
-    plt.imshow(image)
+    im_new = cv2.warpPerspective(image, homography_matrix, (size[1], size[0]))
+    cv2.imwrite(filename, im_new)
+
+def plot_points_on_image(src_coordinates, dst_coordinates, first_image, second_image, src_filename, dst_filename):
+
+    red = (0, 0, 255)
+    thickness = 2
+
+    for i in range(0,4):
+        x_src = int(src_coordinates[i][0])
+        y_src = int(src_coordinates[i][1])
+
+        x_dst = int(dst_coordinates[i][0])
+        y_dst = int(dst_coordinates[i][1])
+
+        cv2.circle(first_image, (x_src,y_src), 20, red, thickness)
+        cv2.circle(second_image, (x_dst,y_dst), 20, red, thickness)
 
 
-def perspectiveTransform(coordinates_left, coordinates_right, image):
+    cv2.imwrite(src_filename, first_image)
+    cv2.imwrite(dst_filename, second_image)
 
-    size = image.shape
-    M = cv2.getPerspectiveTransform(coordinates_left, coordinates_right)
-    im_new = cv2.warpPerspective(image, M, (size[0], size[1]))
-    cv2.imshow("im_new", im_new)
-    k = cv2.waitKey(10000)
+src, dst = get_image_coordinates(image_src, image_dst)
 
-    print("hh")
+homography_matrix = get_homography_matrix(src, dst)
+homography_matrix = np.vstack((homography_matrix,1)).reshape((3,3))
 
+print(homography_matrix)
 
-coordinates_left, coordinates_right = get_image_coordinates('left.jpg', 'right.jpg')
+apply_homography_matrix(image_src, homography_matrix, 'b_r_l.jpg')
 
-src = np.array(coordinates_left, np.float32)
-dst = np.array(coordinates_right, np.float32)
+plot_points_on_image(src, dst, image_src, image_dst, 'b_r_dots2.jpg', 'b_l_dots2.jpg')
 
-
-homography_matrix = get_homography_matrix(coordinates_left, coordinates_right)
-
-image = cv2.imread('left.jpg')
-
-perspectiveTransform(src, dst, image)
-
-#apply_homography_matrix(image, homography_matrix)
 
