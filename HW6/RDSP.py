@@ -1,6 +1,5 @@
 ## Random dot stereo pair
 
-import cv2
 import numpy as np
 import random as rand
 import matplotlib.pyplot as plt
@@ -38,7 +37,7 @@ def generate_image_stereopair(image):
     return image
 
 
-displaced_image = generate_image_stereopair(new_image, 200)
+displaced_image = generate_image_stereopair(new_image)
 
 fix, (ax, ax2) = plt.subplots(1,2)
 ax.imshow(new_image2)

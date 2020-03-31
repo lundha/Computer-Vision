@@ -4,8 +4,6 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.image as img
-from PIL import Image
 
 
 # Convert to greyscale
@@ -37,22 +35,22 @@ img_lower_reso32 = cv2.pyrDown(img_lower_reso64)
 cv2.imwrite('img32.jpg', img_lower_reso32)
 
 
-#fix, (ax, ax2, ax3, ax4) = plt.subplots(1,4)
-#ax.set_title("512x512")
-#ax.imshow(img_512)
-#ax2.set_title("256x256")
-#ax2.imshow(img_lower_reso256)
-#ax3.set_title("128x128")
-#ax3.imshow(img_lower_reso128)
-#ax4.set_title("32x32")
-#ax4.imshow(img_lower_reso32)
+fix, (ax, ax2, ax3, ax4) = plt.subplots(1,4)
+ax.set_title("512x512")
+ax.imshow(img_512)
+ax2.set_title("256x256")
+ax2.imshow(img_lower_reso256)
+ax3.set_title("128x128")
+ax3.imshow(img_lower_reso128)
+ax4.set_title("32x32")
+ax4.imshow(img_lower_reso32)
 
-#plt.show()
+plt.show()
 
 # pyrUp and pyrDown convolves the image with the Gaussian kernel and then upsample/downsample
 
 
-'''
+
 img512_smooth = cv2.pyrUp(img_lower_reso256)
 img256_smooth = cv2.pyrUp(img_lower_reso128)
 img128_smooth = cv2.pyrUp(img_lower_reso64)
@@ -76,5 +74,5 @@ ax4.imshow(img_lower_reso32)
 
 plt.show()
 cv2.destroyAllWindows()
-'''
+
 
